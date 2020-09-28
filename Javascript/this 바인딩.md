@@ -38,3 +38,15 @@ function Foo(name) {
 const fooObj = new Foo('foo');
 console.log(fooObj.name);  // foo
 ```
+
+4. apply, call, bind 첫번째 인자로 넘기는 것이 this로 바인딩
+
+```javascript
+function foo() {
+    return this.name;
+}
+
+const bar = {name: 'bar'};
+
+console.log(foo.apply(bar)); // bar
+```
