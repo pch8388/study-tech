@@ -40,3 +40,6 @@ module.experts = {
 }
 ```
 - 빌드된 결과물(output) 을 html 에서 로드
+```html
+<script src="dist/main.js"></script>
+```
