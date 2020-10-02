@@ -17,14 +17,14 @@ npm install -D webpack webpack-cli
 - --entry : 엔트리 포인트 지정
 - --output : 결과 파일 저장 위치
 
-## 설정파일
+## entry / output
 - webpack.config.js : 기본설정 파일이름
 ```javascript
 const path = require('path');
 
 module.experts = {
   mode: 'development',
-  entry: { // 엔트리 포인트를 여러개 둘 수도 있음
+  entry: { // 엔트리 포인트를 여러개 둘 수도 있음 (SPA 가 아닌 멀티페이지 애플리케이션에 적합)
     main: './src/app.js'
   },
   output: {
@@ -42,4 +42,34 @@ module.experts = {
 - 빌드된 결과물(output) 을 html 에서 로드
 ```html
 <script src="dist/main.js"></script>
+```
+
+## loader
+- 웹팩이 자바스크립트 파일이 아닌 리소스(HTML, CSS, Images, fonts...)를 모듈로 포함시킬 수 있도록 도와줌
+- 사용할 로더를 설치해야 함
+```
+npm install style-loader css-loader file-loader url-loader
+```
+- webpack.config.js
+```javascript
+module: {
+    rules: [   // rule 을 정의
+      {
+        test: /\.css$/,   // 정규식으로 로더를 사용할 형식 정의
+        use: [            // 사용할 로더들
+          'style-loader',   // 로더는 오른쪽에서 왼쪽 순서로 적용됨(아래에서 위), 로더의 순서를 규칙에 맞춰야 하는 경우 있음
+          'css-loader'
+        ]
+      },
+      {
+        test: /\.(png|jpg|gif|svg)$/,
+        loader: 'url-loader',
+        options: {      
+          publicPath: './dist/',
+          name: '[name].[ext]?[hash]',
+          limit: 10000    // 10kb 미만은 url 로더 사용
+        }
+      }
+    ]
+  }
 ```
