@@ -17,4 +17,4 @@ npm install -g @vue/cli
 vue create front-end
 ```
 3. vue-cli 옵션화면에서 필요한 옵션을 선택
-![vue-cli 옵션이미지](image/vue-cli-option.png)
+![vue-cli 옵션이미지](images/vue-cli-option.JPG)
