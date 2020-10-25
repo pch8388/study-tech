@@ -48,3 +48,19 @@ module.experts = {
     }
 };
 ```
+
+# 프론트엔드 필요 패키지 설치
+## axios 라이브러리
+- 서버와 통신을 위해 사용
+- 테스트를 위한 moxios
+```shell
+npm install axios --save
+npm install moxios --save-dev
+```
+
+## 유효성 검증 라이브러리
+- Vuelidate : Vue.js 를 위한 모델 기반 검증 라이브러리
+    [https://github.com/vuelidate/vuelidate]
+```shell
+npm install vuelidate --save
+```
