@@ -62,4 +62,4 @@
     ```
     
 - 나의 풀이 : [https://github.com/pch8388/study-algorithm/blob/caf1d8371362c21116a35d6c54b9623b820d4da7/src/main/java/me/leetcode/ThreeSumClosest.java]
-문제 링크 : [https://leetcode.com/problems/3sum-closest/submissions/]
+- 문제 링크 : [https://leetcode.com/problems/3sum-closest/submissions/]
