@@ -26,3 +26,5 @@ public class Application implements CommandLineRunner {
 	}
 }
 ```
+
+[참고](https://mkyong.com/spring-boot/spring-boot-non-web-application-example/)
