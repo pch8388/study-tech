@@ -1,6 +1,19 @@
 # Spring redis
 - Spring 의 세션 클러스터링을 redis 로 관리하는 방법 정리
 
+## redis
+- redis 는 싱글쓰레드
+  - O(n) 명령어를 조심해야 함
+    - KEYS
+    - FLUSHALL, FLUSHDB => 어쩔 수 없이 써야하는 경우가 있음
+    - Delete Collections
+    - Get All Collections
+  - 오래 걸리는 작업이 쓰레드를 점유하면 다른 작업들이 타임아웃에 걸려 서버가 다운될 수 있음
+- KEYS 는 scan 명령을 사용하는 것으로 하나의 긴 명령을 짧은 여러번의 명령으로 바꿀 수 있음
+  - KEYS : 저장된 모든 키 호출
+  - scan : 커서 방식으로 짧게 여러번 스캔
+- Collection 의 모든 item 을 가져와야 하면 Collection 의 일부만 가져오거나(Sorted Set 큰 Collection 을 여러개의 작은 Collection 으로 저장
+
 ## 디펜던시 추가
 - maven
 ```xml
