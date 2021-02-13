@@ -80,3 +80,20 @@
 - GET, HEAD, POST, PATCH 캐시가능
 - 실제로 GET, HEAD 정도만 캐시로 사용
   - POST, PATCH 는 본문 내용까지 캐시 키로 고려해야 하는 데, 구현이 쉽지 않음
+
+## 활용
+### 데이터 전달방식
+-  쿼리 파라미터를 통한 데이터 전송 : GET => 주로 정렬 필터(검색어)
+-  메시지 바디를 통한 데이터 전송 : POST, PUT, PATCH => 리소스 등록, 변경 
+
+### 클라이언트에서 서버로 데이터 전송
+- 정적 데이터 조회 : GET
+- 동적 데이터 조회 : GET + query parameter
+- HTML Form 전송
+  - GET, POST 모두 사용가능하지만, GET 으로 요청하면 url 에 query parameter 로 붙어서 보내짐
+  - 일반적인 form 전송시 Content-Type: application/x-www-form-urlencoded
+  - 파일 전송시 Content-Type: multipart/form-data
+    - 파일 전송같은 바이너리 데이터 전송시 사용
+    - 다른 종류의 여러 파일과 폼의 내용 함께 전송 가능
+- HTTP API 전송
+  - 서버 to 서버, 앱, 웹 클라이언트 (Ajax 통신)
