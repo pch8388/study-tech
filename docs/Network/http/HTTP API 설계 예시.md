@@ -39,3 +39,34 @@
   - 클라이언트가 관리하는 리소스 저장소
   - 클라이언트가 리소스의 URI 를 알고 관리
   - 여기서 스토어는 /files
+
+## HTML FORM 사용
+- 회원 목록 GET /members
+- 회원 등록 폼 GET /members/new
+- 회원 등록 POST /members/new 혹은 /members
+- 회원 조회 GET /members/{id}
+- 회원 수정 폼 GET /members/{id}/edit
+- 회원 수정 POST /members/{id}/edit 혹은 /members/{id}
+- 회원 삭제 POST /members/{id}/delete
+- 컨트롤 URI
+  - GET, POST 만 지원
+  - 이런 제약을 해결하기 위해 **동사로 된 리소스 경로 사용**
+  - POST 의 /new, /edit, /delete 등이 컨트롤 URI
+  - HTTP 메서드로 해결하기 애매한 경우에 사용
+
+## URI 설계 개념
+- 문서(document)
+  - 단일 개념(파일 하나, 객체 인스턴스, 데이터베이스 row)
+  - `/members/100, /files/star.jpg`
+- 컬렉션(collection)
+  - 서버가 관리하는 리소스 디렉터리
+  - 서버가 리소스의 URI를 생성하고 관리
+  - `/members`
+- 스토어(store)
+  - 클라이언트가 관리하는 자원 저장소
+  - 클라이언트가 리소스의 URI를 알고 관리
+  - `/files`
+- 컨트롤러(controller), 컨트롤 URI
+  - 문서, 컬렉션, 스토어로 해결하기 어려운 추가 프로세스 실행
+  - 동사를 직접 사용
+  - `/members/{id}/delete`
