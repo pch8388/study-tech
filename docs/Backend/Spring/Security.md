@@ -123,3 +123,62 @@ protected void configure(AuthenticationManagerBuilder auth) throws Exception {
         - HttpSessionSecurityContextRepository : loadContext 메소드에서 HttpSession 에 저장되어있는 인증정보를 가져온다.(이미 로그인한경우)
     - UsernamePasswordAuthenticationFilter : attemptAuthentication 메소드에서 AuthenticationManager.authenticate 메소드를 호출해서 리턴 받은 값을 부모 객체인 AbstractAuthenticationProcessingFilter 에서 받는다(템플릿 메소드 패턴)
         - 또한 successfulAuthentication 메서드에서 SecurityContextHolder 에 저장한다
+
+### FilterChainProxy
+- SecurityConfig 에서 설정한 내용으로 필터가 설정된다 ⇒ 자동으로 스프링에서 설정하는 필터들이 있다. 이 필터들은 서블릿 필터를 스프링에서 구현한 구현체들이고, 커스터마이징한 필터를 추가해주는 등의 행위도 할 수 있다.
+    - WebSecurity 로 필터체인을 만든다
+- FilterChainProxy 의 getFilters 메소드에서 반환하는 필터들의 목록을 보면 어떠한 필터들이 포함되었는지 확인할 수 있다.
+- getFilters 로 받아온 필터들의 doFilter 실행하여 순차적인 실행을 한다.
+- SecurityFilterAutoConfiguration 에서 DelegatingFilterProxyRegistrationBean 에 자동으로 등록되고 기본값으로 springSecurityFilterChain 라는 이름의 빈으로 등록된다
+
+### DelegatingFilterProxy
+- 서블릿 필터 처리를 스프링에 있는 빈으로 위임시키고 싶을 때 사용할 수 있는 필터
+- 스프링 부트 사용 시 SecurityFilterAutoConfiguration 에서 자동으로 등록한다(DelegatingFilterProxyRegistrationBean)
+- 빈 이름으로 타켓을 설정
+
+```java
+DelegatingFilterProxy -> FilterChainProxy 위임
+```
+
+### AccessDecisionManager
+- 인가를 관리하는 인터페이스
+    - 인증 : 특정한 권한을 가진 유저인지 확인
+    - 인가 : 해당 리소스에 접근할 수 있는 권한인지 확인
+- 일반적으로 AffirmativeBased 를 사용
+    - 여러 Voter 중 하나라도 허용되면 허용
+- 인가가 실패하면 AccessDeniedException 이 발생
+- AccessDecisionManager 의 decide 메소드에서 voter 를 이용하여 권한을 확인한다
+- AccessDecisionVoter
+    - 해당 Authentication 이 특정한 리소스에 접근할 때 필요한 ConfigAttributes를 만족하는 지 확인
+    - AbstractAccessDecisionManager 의 supports 메소드에서 확인
+    - WebExpressionVoter : 웹 시큐리티에서 사용하는 기본 구현체 ⇒ ROLE_XXXX 매치되는지 확인
+    - RoleHierarchyVoter : 계층형 ROLE 지원
+
+### FilterSecurityInterceptor
+- 인가처리를 하는 필터로 FilterChainProxy 의 제일 마지막 필터로(보통의 경우) AccessDecisionManager 의 decide 를 실행시킨다.
+    - AbstractSecurityInterceptor 의 beforeInvocation 메소드에서 호출한다
+
+### ExceptionTranslationFilter
+- AbstractSecurityInterceptor 의 하위 클래스에서 발생하는 예외를 처리
+    - UsernamePasswordAuthenticationFilter 에서 발생하는 인증실패 얘외는 해당 필터의 상위 클래스에서 처리한다.
+    - AbstractAuthenticationProcessingFilter 의 unsuccessfulAuthentication 에서 SimpleUrlAuthenticationFailureHandler 의 onAuthenticationFailure 를 호출하고,  같은 클래스의 saveException 에서 세션에 에러를 저장하여 로그인 관련 필터로 처리를 위임한다.
+
+- AuthenticationException (인증실패) 발생 → AuthenticationEntiryPoint 실행 (재인증 요청)
+- AccessDeniedException (인가실패) 발생
+    - 익명 사용자면 AuthenticationEntiryPoint 실행 (재인증 요청)
+    - 익명 사용자가 아니면 AccessDeniedHandler 에게 위임한다
+
+### ignoring
+- static resource 에 대해 시큐리티 검사를 하게 되면 자원이 낭비된다
+- WebSecurity 를 인자로 사용하는 configure 메소드를 오버라이딩 해서 구현하면 특정 리소스에 대해 ignore 할 수 있음
+
+    ```java
+    @Override
+        public void configure(WebSecurity web) throws Exception {
+            // static 요청에 대해 검사하지 않음
+            web.ignoring().requestMatchers(
+    						PathRequest.toStaticResources().atCommonLocations()); 
+        }
+    ```
+
+    - h2 콘솔을 제외시키거나 ant matcher 를 쓸 수도 있고, 다양한 방법이 있음
