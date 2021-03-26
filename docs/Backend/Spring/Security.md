@@ -182,3 +182,31 @@ DelegatingFilterProxy -> FilterChainProxy 위임
     ```
 
     - h2 콘솔을 제외시키거나 ant matcher 를 쓸 수도 있고, 다양한 방법이 있음
+
+### WebAsyncManagerIntegrationFilter
+- Spring MVC Async 기능 사용 시 SecurityContext를 공유하도록 도와주는 필터
+    - SecurityContext 는 ThreadLocal 을 기본전략으로 사용하기 때문에 다른 쓰레드를 사용하는 경우 컨텍스트 공유를 하지 못하지만 이 필터가 공유 가능하도록 한다
+    - 컨트롤러에서 Callable 을 리턴하는 Async 한 경우에만 가능하다.(Service 등의 레이어에서는 사용안됨)
+    - PreProcess : SecurityContext 설정
+    - PostProcess : SecurityContext 를 정리(clean up)
+        - SecurityContext 는 항상 요청이 끝날때 정리해야한다
+- Service 에서 @Async 를 사용한 경우
+    - 쓰레드가 서로 다르기 때문에 SecurityContext 를 공유하지 못함
+
+        ```java
+        // 시큐리티 홀더의 공유 전략 설정 - 쓰레드가 생성하는 하위 쓰레드까지 자원공유
+        SecurityContextHolder.setStrategyName(
+        		SecurityContextHolder.MODE_INHERITABLETHREADLOCAL);
+        ```
+
+        - @Async 를 처리하는 쓰레드에서도 SecurityContext 를 공유받을 수 있다
+
+### SecurityContextPersistenceFilter
+- SecurityContextRepository를 사용하여 기존의 SecurityContext를 읽어오거나 초기화 한다
+- 기본적으로 Http session 을 사용하는 전략 사용 ⇒ HttpSessionSecurityContextRepository
+- Spring-Session 과 연동하여 세션 클러스터를 구현할 수 있다 ⇒ 검색해서 공부해야 함
+
+  [Spring Session](https://spring.io/projects/spring-session#samples)
+
+- SecurityContext 는 여러 요청간 공유해야 함
+    - 그렇기에 다른 인증필터보다 항상 상위에 있어야 한다. ⇒ 이미 세션에 SecurityContext 정보가 있으면 다른 필터를 타지 않아야 하기 때문
