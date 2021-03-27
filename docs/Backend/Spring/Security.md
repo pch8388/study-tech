@@ -210,3 +210,45 @@ DelegatingFilterProxy -> FilterChainProxy 위임
 
 - SecurityContext 는 여러 요청간 공유해야 함
     - 그렇기에 다른 인증필터보다 항상 상위에 있어야 한다. ⇒ 이미 세션에 SecurityContext 정보가 있으면 다른 필터를 타지 않아야 하기 때문
+
+### HeaderWriterFilter
+- 응답 헤더에 시큐리티 관련 헤더를 추가해주는 필터
+- XContexntTypeOptionsHeaderWriter : 마임타입 스니핑 방어
+    - Content-Type 에 지정된 마임타임으로만 실행되도록 설정
+
+    ```
+    X-Context-Type-Options : nosniff
+    ```
+
+- XXssProtectionHeaderWriter : 브라우저에 내장된 XSS 필터 적용
+    - Lucy XSS 등의 추가 라이브러리를 사용하여 추가적으로 방어를 하기도 함
+
+    ```
+    X-XSS-Protection: 1;mode=block
+    ```
+
+- CacheControlHeadersWriter : 캐시 히스토리 취약점 방어
+    - 동적으로 랜더링되는 페이지는 캐시하는 것이 보안에 취약할 수 있음
+
+    ```
+    Cache-Control: no-cache, no-store, max-age=0, must-revalidate
+    Expires: 0
+    Pragma: no-cache
+    ```
+
+- HstsHeaderWriter : HTTPS 로만 소통하도록 강제
+    - HTTPS 설정하면 설정됨 ⇒ 설정하지 않으면 무시된다
+    - XFrameOptionsHeaderWriter : click jacking 방어
+
+        ```
+        X-Frame-Options: DENY
+        ```
+
+### CsrfFilter
+- CSRF 어택 방지 필터
+    - 인증된 유저의 계정을 사용해 악의적인 변경 요청을 만들어 보내는 기법
+    - CORS 를 사용할 때 특히 주의해야 함 → 타 도메인에서 보내오는 요청을 허용하기 때문에
+- 의도한 사용자만 리소스를 변경할 수 있도록 허용하는 필터
+- CSRF 토큰을 사용하여 방지
+    - Form 인증의 경우 input hidden 에 _csrf 라는 name 을 가진 값을 셋팅해준다
+    - Rest api 에서는 disable 하기도 함
