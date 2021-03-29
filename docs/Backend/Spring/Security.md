@@ -252,3 +252,27 @@ DelegatingFilterProxy -> FilterChainProxy 위임
 - CSRF 토큰을 사용하여 방지
     - Form 인증의 경우 input hidden 에 _csrf 라는 name 을 가진 값을 셋팅해준다
     - Rest api 에서는 disable 하기도 함
+
+### LogoutFilter
+- 로그아웃 처리를 하는 필터
+- 로그아웃 요청이 들어온 경우에만 적용된다 ⇒ 로그아웃일 경우에만 뭔가를 실행한다
+- LogoutHandler : 로그아웃시 필요한 처리를 한다 , 컴포지트 패턴으로 여러 핸들러가 중첩되어 있다.
+    - CsrfLogoutHander, SecurityContextLogoutHandler 가 기본 핸들러
+
+- LogoutSuccessHandler : 로그아웃 후처리를 한다
+    - SimpleUrlLogoutSuccessHandler 를 기본으로 사용
+
+```java
+http.logout()
+		.logoutUrl("/logout")
+		.logoutSuccessUrl("/")
+		.logoutRequestMatcher(new AntPathRequestMatcher("/logout"))
+		.invalidateHttpSession(true)
+		.deleteCookies("cookie-name")
+		.addLogoutHandler(handler)
+		.logoutSuccessHandler(handler);
+```
+
+### UsernamePasswordAuthenticationFilter
+- 폼 로그인을 처리하는 인증 필터
+- [폼에 입력된 username 과 password 로 Authentication을 만들고 AuthenticationManager 를 사용하여 인증 시도](https://www.notion.so/pch8388/Spring-Security-4e5f31703918461fb56244e8aeb98ef8#f350df36df474430852d117f5f214de7)
