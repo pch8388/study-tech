@@ -276,3 +276,66 @@ http.logout()
 ### UsernamePasswordAuthenticationFilter
 - 폼 로그인을 처리하는 인증 필터
 - [폼에 입력된 username 과 password 로 Authentication을 만들고 AuthenticationManager 를 사용하여 인증 시도](https://www.notion.so/pch8388/Spring-Security-4e5f31703918461fb56244e8aeb98ef8#f350df36df474430852d117f5f214de7)
+
+### DefaultLoginPageGeneratingFilter
+- 기본 로그인 폼 페이지를 생성해주는 필터
+- GET /login 에 대한 요청을 처리
+- 로그인 페이지를 커스텀하게 사용하면 DefaultLoginPageGeneratingFilter, DefaultLogoutPageGeneratingFilter 두 필터가 필터체인에서 제외됨
+
+    ```java
+    // 커스텀 로그인 페이지
+    http.formLogin()
+        .loginPage("/login")   // get 요청은 로그인 폼 페이지를 보여주고, post 요청은 UsernamePasswordAuthenticationFilter 에서 검증
+        .permitAll();
+    ```
+
+  - get 요청은 로그인 폼 페이지를 보여주고, post 요청은 UsernamePasswordAuthenticationFilter 에서 검증
+
+### BasicAuthenticationFilter
+- basic 인증 : 요청해더에 username 과 password 를 실어 보내면 브라우저나 서버가 값을 읽어서 인증하는 방식
+- http basic 인증을 지원하는 필터
+- 인증이 되면 SecurityContextHolder 에 인증 정보를 넣음
+- UsernamePasswordAuthenticationFilter 와 대조적
+- Session 에 인증정보를 저장하지 않음 → 항상 인증정보를 보내야 함 (stateless)
+- 보안에 취약하기 때문에 반드시 HTTPS 를 사용 권장
+
+### RequestCacheAwareFilter
+- 현재 요청과 관련 있는 캐시된 요청이 있는 지 찾아서 적용하는 필터
+- 캐시된 요청이 없다면, 현재 요청 처리
+- 캐시된 요청이 있으면 캐시된 요청을 처리
+
+### SecurityContextHolderAwareRequestFilter
+- 시큐리티와 관련된 서블릿 스펙을 구현하는 필터
+
+### AnonymousAuthenticationFilter
+- SecurityContext 에 Authentication 이 null 이면 익명 Authentication 을 만들어 넣어줌
+  - null object pattern
+
+    ```java
+    http.anonymous()
+    		.principal()   // pricipal object
+    		.authorities() // 인증정보
+    ```
+
+  - 설정하지 않으면 디폴트 익명 정보로 넣어줌
+
+### SessionManagementFilter
+- 세션 관리 필터
+- 세션 변조 방지 전략 설정 : sessionFixation
+  - changeSessionId : 서블릿 3.1 이상의 컨테이너 사용 시 기본값
+- 유효하지 않은 세션을 리다이렉트 시킬 url 설정 : invalidSessionUrl
+- 동시성 제어 : maximumSessions
+  - 추가 로그인을 막을지에 대한 여부 설정
+
+      ```java
+      http.sessionManagement()
+          .maximumSessions(1)  // 같은 계정으로 동시 로그인 최대 개수
+              .maxSessionsPreventsLogin(false); // 동시 접속이 생기면 기존의 세션을 false : 만료시킴, true : 새로운 접속 불가
+      ```
+
+    - 동시 접속이 생기면 기존의 세션을 false : 만료시킴, true : 새로운 접속 불가
+- 세션 생성 전략 : sessionCreationPolicy
+  - IF_REQUIRED : 기본설정, 필요할때마다 생성
+  - NEVER : 스프링 시큐리티에서 세션을 생성하지 않지만, 세션이 있으면 사용한다
+  - STATELESS : 세션을 사용하지 않음 → REST API
+  - ALWAYS
