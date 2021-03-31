@@ -339,3 +339,58 @@ http.logout()
   - NEVER : 스프링 시큐리티에서 세션을 생성하지 않지만, 세션이 있으면 사용한다
   - STATELESS : 세션을 사용하지 않음 → REST API
   - ALWAYS
+
+### ExceptionTranslationFilter
+- 인증, 인가에 대한 에러처리를 담당하는 필터
+- AuthenticationException (인증 에러) → AuthenticationEntryPoint
+- AccessDeniedHandler (인가 에러) → AccessDeniedHandler
+
+```java
+http.exceptionHandling()
+	  .accessDeniedHandler((request, response, accessDeniedException) -> {
+	      UserDetails principal = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+	      String username = principal.getUsername();
+	      System.out.println(username + " is denied to access " + request.getRequestURI());
+	      response.sendRedirect("/access-denied");
+	  }); // 핸들러를 구현하여 인가 실패에 대한 처리
+```
+
+### FilterSecurityInterceptor
+- HTTP 리소스 시큐리티 처리를 담당하는 필터
+- AccessDecisionManager 를 사용하여 인가 처리
+
+### RememberMeAuthenticationFilter
+- 세션이 사라지거나 만료가 되어도 쿠키나 DB 를 사용하여 저장된 토큰 기반으로 인증을 지원하는 필터
+
+    ```java
+    http.rememberMe()
+        .userDetailsService(accountService)
+        .key("remember-me-sample");
+    ```
+
+  - SecurityContextHolderAwareRequestFilter 아래에 추가됨
+  - remember me 토큰을 통해 인증하면 UsernamePasswordToken 이 아닌 RememberMeAuthenticationToken 을 사용한다
+
+### 커스텀 필터 추가
+- 서블릿의 필터를 구현하면 되는 데, 스프링에서 제공하는 GenericFilterBean 을 이용하면 doFilter 메소드만 구현할 수 있도록 구성되어 있다
+
+    ```java
+    @Slf4j
+    public class LoggingFilter extends GenericFilterBean {
+
+        @Override
+        public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
+            StopWatch stopWatch = new StopWatch();
+            stopWatch.start(((HttpServletRequest)request).getRequestURI());
+
+            chain.doFilter(request, response);
+
+            stopWatch.stop();
+            logger.info(stopWatch.prettyPrint());
+        }
+    }
+
+    // config
+    // 특정 필터의 앞쪽에 넣음
+    http.addFilterBefore(new LoggingFilter(), WebAsyncManagerIntegrationFilter.class);
+    ```
