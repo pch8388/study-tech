@@ -394,3 +394,61 @@ http.exceptionHandling()
     // 특정 필터의 앞쪽에 넣음
     http.addFilterBefore(new LoggingFilter(), WebAsyncManagerIntegrationFilter.class);
     ```
+### @AuthenticationPrincipal
+- 웹 MVC 핸들러 아규먼트로 받는 Principal 객체를 커스텀한 유저 클래스로 변환할 수 있다
+
+    ```java
+    @Getter
+    public class UserAccount extends User {
+
+        private Account account;
+
+        public UserAccount(Account account) {
+            super(account.getUsername(), account.getPassword(),
+                List.of(new SimpleGrantedAuthority("ROLE_" + account.getRole())));
+            this.account = account;
+        }
+    }
+
+    // UserDetailService
+    @Override
+    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+        final Account account = accountRepository.findByUsername(username);
+        return Optional.ofNullable(account)
+            .map(UserAccount::new)
+            .orElseThrow(() -> new UsernameNotFoundException(username));
+    }
+
+    // Controller
+    @GetMapping("/")
+    public String index(
+    		Model model, 
+    		@AuthenticationPrincipal UserAccount userAccount) {
+
+        Optional.ofNullable(userAccount)
+            .ifPresentOrElse(p -> model.addAttribute("message", "Hello, " + p.getUsername()),
+                () -> model.addAttribute("message", "Hello Spring Security"));
+
+        return "index";
+    }
+    ```
+
+- expression 사용
+
+    ```java
+    @Retention(RetentionPolicy.RUNTIME)
+    @Target(ElementType.PARAMETER)
+    @AuthenticationPrincipal(
+    	expression = "#this == 'anonymousUser' ? null : account")
+    public @interface CurrentUser {
+    }
+
+    // Controller
+    @GetMapping("/dashboard")
+        public String dashboard(Model model, @CurrentUser Account account) {
+            model.addAttribute("message", "Hello " + account.getUsername());
+            AccountContext.setAccount(accountRepository.findByUsername(account.getUsername()));
+            sampleService.dashboard();
+            return "dashboard";
+        }
+    ```
