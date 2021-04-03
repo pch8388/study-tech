@@ -46,3 +46,9 @@ Host: www.google.com
   - en-US => Quality Values 0.8
 - 우선순위에 따라 서버에서 지원하는 언어 중에 포함된 것을 반환할 수 있게 요청한다.
 - 구체적인 것을 우선함 => 좀 더 나타내는 폭이 좁은(명시적인) 요청을 우선순위로 한다.
+
+## 전송방식
+- 단순전송 : 요청 <-> 응답(Content-Length 를 지정 => 컨텐츠에 대한 길이를 알때), 한번에 요청하고 한번에 받음
+- 압축전송 : 서버에서 gzip 등으로 응답을 압축(Content-Encoding: gzip 과 같이 압축 인코딩을 응답)
+- 분할전송 : 서버에서 전송시 응답을 나눠서 전송 (Transfer-Encoding: chunked) => Content-Length 를 보내면 안됨
+- 범위전송 : 범위를 지정해서 요청(Range) <-> 범위에 대해 응답(Content-Range)
