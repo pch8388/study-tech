@@ -52,3 +52,11 @@ Host: www.google.com
 - 압축전송 : 서버에서 gzip 등으로 응답을 압축(Content-Encoding: gzip 과 같이 압축 인코딩을 응답)
 - 분할전송 : 서버에서 전송시 응답을 나눠서 전송 (Transfer-Encoding: chunked) => Content-Length 를 보내면 안됨
 - 범위전송 : 범위를 지정해서 요청(Range) <-> 범위에 대해 응답(Content-Range)
+
+## 일반정보
+- From : 유저 에이전트의 이메일 정보 => 잘 사용하지 않음, 검색엔진 등에 정보 제공을 위해 사용
+- Referer : 이전 페이지 정보, 유입경로 분석 등에 이용한다
+- User-Agent : 클라이언트 애플리케이션 정보
+- Server : 요청을 처리하는 origin(실제 응답을 요청하는) 서버의 소프트웨어 정보
+
+[참고강의](https://www.inflearn.com/course/http-%EC%9B%B9-%EB%84%A4%ED%8A%B8%EC%9B%8C%ED%81%AC)

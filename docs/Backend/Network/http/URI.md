@@ -29,3 +29,5 @@
 - 변하지 않음
 - urn:isbn:12312190008 (어떤 책의 isbn URN)
 - 이름만으로 실제의 리소스를 찾을 수 있는 방법이 보편화 되지 않음
+
+[참고강의](https://www.inflearn.com/course/http-%EC%9B%B9-%EB%84%A4%ED%8A%B8%EC%9B%8C%ED%81%AC)

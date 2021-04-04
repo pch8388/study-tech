@@ -97,3 +97,5 @@
     - 다른 종류의 여러 파일과 폼의 내용 함께 전송 가능
 - HTTP API 전송
   - 서버 to 서버, 앱, 웹 클라이언트 (Ajax 통신)
+
+[참고강의](https://www.inflearn.com/course/http-%EC%9B%B9-%EB%84%A4%ED%8A%B8%EC%9B%8C%ED%81%AC)

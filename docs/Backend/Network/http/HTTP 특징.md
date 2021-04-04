@@ -40,3 +40,5 @@
 ## 단순함, 확장 가능
 - 단순하기 때문에 확장이 쉬움
 - 단순하고 확장이 가능하기 때문에 널리 쓰임
+
+[참고강의](https://www.inflearn.com/course/http-%EC%9B%B9-%EB%84%A4%ED%8A%B8%EC%9B%8C%ED%81%AC)

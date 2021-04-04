@@ -64,3 +64,5 @@
   - 일시적 과부화나 예정된 작업으로 잠시 요청 처리할 수 없음
   - Retry-After 헤더 필드로 얼마뒤에 복구되는지 보낼 수 있음
   - 거의 사용할 일이 없음
+
+[참고강의](https://www.inflearn.com/course/http-%EC%9B%B9-%EB%84%A4%ED%8A%B8%EC%9B%8C%ED%81%AC)
