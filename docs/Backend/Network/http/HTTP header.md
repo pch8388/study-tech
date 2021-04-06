@@ -59,4 +59,18 @@ Host: www.google.com
 - User-Agent : 클라이언트 애플리케이션 정보
 - Server : 요청을 처리하는 origin(실제 응답을 요청하는) 서버의 소프트웨어 정보
 
+## 특별한 정보
+- Host : 요청한 호스트 정보(도메인) => 실제로 어떤 도메인에 요청을 한 건지에 대한 정보를 가지고 있어야 한다
+- Location : 페이지 리다리렉션, 300번대 응답이면 이 헤더로 어디로 리다이렉션 해야할지 알려줌
+- Allow: 405 응답을 내리면서 어떤 메소드를 응답하는 지 알려줌
+  - 405 : 해당 메소드가 서버에서 지원하지 않을 때 응답하는 http status
+- Retry-After : 503 응답일때 서비스가 언제부터 이용가능한지 알려주는 헤더
+  - 503 : 서비스가 불가할 때 응답해주는 http status
+  
+## 인증
+- Authorization : 클라이언트의 인증정보를 서버로 전달
+- XXX-Authenticate : 401응답과 함께 어떤 인증방식을 사용해야 하는지 알려줌
+  - 401: 인증이 되지 않았을 때 응답하는 http status
+  [참고](https://github.com/pch8388/til/blob/master/docs/read-book/%EB%A6%AC%EC%96%BC%EC%9B%94%EB%93%9Chttp/2%EC%9E%A5.md#%EC%9D%B8%EC%A6%9D%EA%B3%BC-%EC%84%B8%EC%85%98)
+
 [참고강의](https://www.inflearn.com/course/http-%EC%9B%B9-%EB%84%A4%ED%8A%B8%EC%9B%8C%ED%81%AC)
