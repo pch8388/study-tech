@@ -73,4 +73,34 @@ Host: www.google.com
   - 401: 인증이 되지 않았을 때 응답하는 http status
   [참고](https://github.com/pch8388/til/blob/master/docs/read-book/%EB%A6%AC%EC%96%BC%EC%9B%94%EB%93%9Chttp/2%EC%9E%A5.md#%EC%9D%B8%EC%A6%9D%EA%B3%BC-%EC%84%B8%EC%85%98)
 
+## 쿠키
+- Set-Cookie: 응답(서버 -> 클라 전달)
+  - 웹 브라우저의 쿠키 저장소에 저장(document.cookie) => HttpOnly 설정되있으면 js 에서 접근할 수 없음  
+- Cookie: 요청 (클라 -> 서버 전달)
+- 사용처 
+  - 사용자 로그인 세션 관리
+  - 광고정보 트래킹 
+- 쿠키정보는 항상 서버로 전송되기 때문에 최소한의 정보만 사용하는 것이 좋음
+- 서버에 계속 전송할 필요가 없는 경우(선택적으로 서버로 보내거나 클라이언트에서만 사용할 경우)에는 Web storage (localStorage, sessionStorage)를 사용
+- 보안에 민감한 데이터는 저장하면 안됨 (Secure 설정을 통해 https 전송에서만 사용할 수 있지만 안전하다고 보장할 수는 없음)
+
+### 쿠키의 생명주기
+- expires = 만료일이 되면 쿠키 삭제
+- max-age = 초단위로 쿠키 생명주기 설정
+- 세션쿠키 : 만료날짜 생략시 브라우저 종료시까지 유지
+- 영속쿠키 : 만료날짜 생략시 영구적으로 유지
+
+### 쿠키 - 도메인
+- 명시 : 명시한 문서 기준 도메인과 서브도메인(domain=mozilla.org)
+- 생략 : 현재 문서 기준 도메인에만 적용(서브도메인에서는 접근할 수 없음)
+
+### 쿠키 - 경로
+- 경로를 포함한 하위 경로 페이지만 쿠키 접근
+- 일반적으로 루트로 지정(path=/)
+
+### 쿠키 - 보안
+- Secure : https 일때만 서버로 전송
+- HttpOnly : XSS 공격 방지, js 에서 접근 불가
+- SameSite : XSRF 공격 방지, 요청 도메인과 설정된 도메인이 같은 경우만 쿠키 전송
+
 [참고강의](https://www.inflearn.com/course/http-%EC%9B%B9-%EB%84%A4%ED%8A%B8%EC%9B%8C%ED%81%AC)
