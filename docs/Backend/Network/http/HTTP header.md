@@ -132,4 +132,18 @@ Host: www.google.com
   - no-cache : 데이터는 캐시해도 되지만, 항상 origin 서버에서 검증하고 사용
   - no-store : 데이터에 민감 정보가 있으므로 저장하지 않도록한다.(메모리에서만 사용)
 
+### 프록시 캐시
+- CDN 서비스 같은 것이 이에 해당 할 수 있음
+- Cache-Control
+  - public : 프록시에도 저장
+  - private : 응답이 해당 사용자만을 위한 것 
+  - s-maxage : 프록시 캐시에만 적용되는 만료기간
+
+### 캐시 무효화
+- 확실한 캐시 무효화 응답 => 웹브라우저가 임의로 캐시하는 경우가 있음(특히 get 요청)
+- 캐시 무효화를 사용하여 캐시를 절대 하지 않도록 한다
+  - Cache-Control: no-cache, no-store, must-revalidate
+  - Pragma: no-cache => http1.0 하위호환을 위해 넣음
+- must-revalidate : 캐시 만료후 최초 조회시 origin 에 검증, origin 접근 실패시 반드시 오류가 발생(504), 캐시 유효기간이면 캐시 사용
+
 [참고강의](https://www.inflearn.com/course/http-%EC%9B%B9-%EB%84%A4%ED%8A%B8%EC%9B%8C%ED%81%AC)
