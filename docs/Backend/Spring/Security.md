@@ -452,3 +452,11 @@ http.exceptionHandling()
             return "dashboard";
         }
     ```
+    
+## AccessDecisionManager 학습 정리
+- AccessDecisionManager 의 기본 구현인 AffirmativeBased 와 프로젝트에서 사용되는 UnanimousBased 의 차이점에 대해 공부하게 되었음
+  - AffirmativeBased : 여러 voter 중 하나만 승인되어도 승인 처리
+  - UnanimousBased : 모든 voter 가 승인하여야 승인처리
+- FilterSecurityInterceptor 에서 AccessDecisionManager 의 decide 메서드를 실행시켜서 인가처리를 한다.
+  - 실제로는 슈퍼클래스인 AbstractSecurityInterceptor 의 beforeInvocation 에서 실행한다.
+- AccessDecisionManager 를 통해 권한에 따라 승인하지 않거나 하는 기능을 추가시킬 수 있다.
