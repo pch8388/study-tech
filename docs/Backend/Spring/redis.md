@@ -2,6 +2,7 @@
 - Spring 의 세션 클러스터링을 redis 로 관리하는 방법 정리
 
 ## redis
+[참고영상](https://youtu.be/mPB2CZiAkKM)
 - redis 는 싱글쓰레드
   - O(n) 명령어를 조심해야 함
     - KEYS
@@ -13,6 +14,45 @@
   - KEYS : 저장된 모든 키 호출
   - scan : 커서 방식으로 짧게 여러번 스캔
 - Collection 의 모든 item 을 가져와야 하면 Collection 의 일부만 가져오거나(Sorted Set 큰 Collection 을 여러개의 작은 Collection 으로 저장
+
+## redis 설치 및 실행
+[참고블로그](https://littleshark.tistory.com/68)
+```shell
+$ docker pull redis
+$ docker run --name test-redis -d -p 6379:6379 redis
+
+## 네트워크 구성
+$ docker network create redis-net
+## 생성된 네트워크 리스트 확인
+$ docker network ls
+
+## 레디스 컨테이너 구동
+$ docker run -d --name redis -p 6379:6379 --network redis-net redis
+
+## redis-cli 접속
+$ docker run -it --network redis-net --rm redis redis-cli -h redis
+```
+
+
+## Redis 특징(document)
+[커맨드 목록](https://redis.io/commands)
+- in-memory data structure store
+- database, cache, maessage broker 로 사용됨
+- 제공하는 data structures : strings, hashes, lists, sets, sorted sets with range queires
+
+### Collections
+- Strings : key-value
+- List
+  - 데이터 중간 삽입시 매우 느림(사용하면 안됨)
+  - 앞뒤로 넣을 수 있음
+  - job queue 에서 많이 씀
+- Set : 데이터가 있는지 없는지만 체크하는 용도, 특정 유저를 follow 하는 목록 저장등에 쓰임
+- Sorted Set
+  - 정렬되는 set
+  - strings 와 함께 제일 많이 쓰임
+  - 범위를 지정해서 가져올 수 있음(index 범위) => score 가 double 타입이기 때문에, 값이 정확하지 않을 수 있음
+- hash
+  - key 밑에 sub key 가 존재
 
 ## 디펜던시 추가
 - maven
