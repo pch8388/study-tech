@@ -115,5 +115,3 @@ RestAssured 에서는 given(사전조건), when(요청), then(응답) 을 지원
 - CRUD 추상화
 - Cucumber 나 JBehave 와 같은 BDD 도구 사용
 - 메서드 네이밍 룰 : 도메인_행위_스텝 ⇒ 이런형태가 좋은 거 같음
-
-[1주차 미션완료](https://github.com/next-step/atdd-subway-map/tree/pch8388)
