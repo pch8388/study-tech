@@ -55,3 +55,6 @@
 - form 인증의 경우 : 요청이 두번나감 ⇒ 인증 + 실제 요청
 - basic 인증의 경우 : preemptive 라는 메서드를 통해 요청 한번에 할 수 있게 됨(401 응답을 받고 다시 보내지 않도록)
 - oauth2 인증의 경우 : 토큰 생성 요청 → 실제 요청
+
+
+[3주차 미션완료](https://github.com/next-step/atdd-subway-favorite/tree/pch8388)
