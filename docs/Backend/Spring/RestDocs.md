@@ -1,4 +1,5 @@
 # Spring RestDocs
+> [Document](https://docs.spring.io/spring-restdocs/docs/current/reference/html5)
 - 테스트를 통과해야만 문서가 생성됨
   - 테스트를 강제할 수 있는 효과가 있음
 - Swagger 나 RestDocs 나 문서를 친절하게 작성하면 코드가 지저분해지고 리팩터링 할 것이 많아지지만 RestDocs 는 Swagger 에 비해 프로덕션 코드에 침투력이 없고, 리팩터링해서 단순화할 수 있는 여지가 있다고 생각된다
@@ -72,6 +73,9 @@ public class AcceptanceTest {
 }
 ```
 
+### RequestBody, ResponseBody
+- requestFields 와 responseFields 를 통하여 Snippet 을 생성한다
+
 - Test code
 ```java
 // given, when
@@ -106,6 +110,34 @@ assertThat(responsePost.getTitle()).isEqualTo(title);
 assertThat(responsePost.getContent()).isEqualTo(content);
 ```
 
+### PathParameter 
+- uri 부분에서 PathVariable (대괄호) 표현으로 작성해주어야 정상적으로 문서가 생성됨
+```java
+final ResponsePostDto responseDto = client.patch().uri("/posts/{postId}", postId)
+			.contentType(APPLICATION_JSON)
+			.accept(APPLICATION_JSON)
+			.body(BodyInserters.fromPublisher(Mono.just(requestUpdatePost(updateContent)),
+				RequestUpdatePostDto.class))
+			.exchange()
+			.expectStatus().isOk()
+			.expectBody(ResponsePostDto.class)
+			.consumeWith(document("post-update-item",
+                preprocessRequest(prettyPrint()),
+                preprocessResponse(prettyPrint()),
+				pathParameters(parameterWithName("postId").description("게시글 id")),
+				getUpdatePostRequestSnippet(), getPostResponseSnippet()))
+			.returnResult()
+			.getResponseBody();
+
+		// then
+		assertThat(responseDto).isNotNull();
+		assertThat(responseDto.getId()).isNotEmpty();
+		assertThat(responseDto.getContent()).isEqualTo(updateContent);
+		assertThat(responseDto.getCreatedDate())
+			.isNotEqualTo(responseDto.getModifiedDate());
+```
+
+## 문서 생성
 - 테스트 코드 작성 후 maven package 나 명령어로 직접 prepare-package 를 실행하면 target/generated-docs 아래에 ascii doc snippet 이 생성된다
 - 생성된 것을 바탕으로 main 디렉터리 바로 아래에 asciidoc/index.adoc 을 생성하여 문서를 만든다
   ```adoc
