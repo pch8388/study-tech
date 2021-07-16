@@ -58,3 +58,35 @@ public class HelloWebfluxMethodApplicationTests {
     // ...
 }
 ```
+
+## Authentication
+- WebTestClient 에서 시큐리티 기능 추가 후 기존의 어노테이션 방식을 사용하거나 mutateWith 를 사용하여 인증할 수 있다
+```java
+// 어노테이션
+@Test
+@WithMockUser
+void testMethod() {
+    client.get()
+    // 내용...
+}
+
+// mutateWith
+@Test
+void testMethod() {
+    client
+      .mutateWith(mockUser())   // mock user 추가
+      .get()
+    // 내용...
+}
+```
+
+## CSRF
+```java
+@Test
+void testMethod() {
+    client
+      .mutateWith(csrf())   // CSRF 토큰 제공
+      .get()
+    // 내용...
+}
+```
