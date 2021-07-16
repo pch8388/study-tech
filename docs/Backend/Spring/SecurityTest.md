@@ -32,3 +32,29 @@ public class WithMockCustomUserSecurityContextFactory
     }
 }
 ```
+
+# WebTestClient 에서의 시큐리티
+- WebTestClient 에서는 시큐리티를 따로 추가 설정해주어야 작동한다
+> [참고](https://godekdls.github.io/Spring%20Security/reactivetestsupport/#301-testing-reactive-method-security)
+```java
+@RunWith(SpringRunner.class)
+@ContextConfiguration(classes = HelloWebfluxMethodApplication.class)
+public class HelloWebfluxMethodApplicationTests {
+    @Autowired
+    ApplicationContext context;
+
+    WebTestClient rest;
+
+    @Before
+    public void setup() {
+        this.rest = WebTestClient
+            .bindToApplicationContext(this.context)
+            // add Spring Security test Support
+            .apply(springSecurity())
+            .configureClient()
+            .filter(basicAuthentication())
+            .build();
+    }
+    // ...
+}
+```
