@@ -13,3 +13,21 @@
   - Flux 가 지원하는 연산자를 일부 제공하며, 일부 연산자 중 Mono 와 다른 Publisher 를 합쳐 Flux 로 변환이 가능하다 => Mono 를 바로 Flux 로 변환도 가능
 - Mono 값은 필요 없고 완료 개념만 있으면 되는 비동기 처리는 Mono<Void> 사용
 
+# subscribe
+- Flux 와 Mono 를 시작하는 가장 쉬운 방법은 팩토리 메소드 사용
+```java
+Flux<String> seq = Flux.just("foo", "bar", "foobar");
+
+// 컬렉션 -> flux 변환
+List<String> iterable = List.of("foo", "bar", "foobar");
+Flux<String> seq2 = Flux.fromIterable(iterable);
+
+// 팩토리 메소드는 값이 없어도 제네릭 타입이 필요함
+Mono<String> emptyMono = Mono.empty();
+
+// 첫번째 파라미터는 시작 값, 두 번째 파라미터는 생산할 아이템 수
+Flux<Integer> numbersFromFiveToSeven = Flux.range(5, 3);
+```
+
+## subscribe example
+[다양한 사용 예](https://github.com/pch8388/study-java-base/blob/master/study-reactive/src/test/java/me/reactive/study/base/SubscribeTests.java)
