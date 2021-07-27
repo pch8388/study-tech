@@ -39,9 +39,14 @@ Flux<Integer> numbersFromFiveToSeven = Flux.range(5, 3);
   - 즉각적 중단을 보장하지 않음 => 취소 명령을 받기전 데이터 생산하고 완료 할 수도 있음
 
 ### Disposables
-- Disposable 관련 유틸 클래스
-- Disposables.swap() : Disposable 래퍼를 생성해서 기존 Disposable 을 자동으로 취소하고 다른 걸로 변경
+- `Disposable` 관련 유틸 클래스
+- `Disposables.swap()` : `Disposable` 래퍼를 생성해서 기존 `Disposable` 을 자동으로 취소하고 다른 걸로 변경
   - 래퍼를 폐기하면 자체적으로 close => 현재 구현체와 이후에 대체하는 모든 구현쳬를 폐기
-- Disposables.composite() : 여러 Disposable 을 수집해서 나중에 한번에 폐기할 수 있다
-  - composite 의 dispose() 메소드를 호출하고 나면 다른 Disposable 을 추가할 때마다 즉시 폐기
+- `Disposables.composite()` : 여러 `Disposable` 을 수집해서 나중에 한번에 폐기할 수 있다
+  - `composite` 의 `dispose()` 메소드를 호출하고 나면 다른 `Disposable` 을 추가할 때마다 즉시 폐기
 
+## BaseSubscriber
+- `subscribe` 메소드에 람다를 직접 조합하는 방법 대신, `Subscriber` 를 넘길 수 있음
+- `BaseSubscriber` 는 `Subscriber` 를 확장
+- 요청할 양을 커스텀 하는 등의 기능을 편리하게 구현할 수 있다. [예제](https://github.com/pch8388/study-java-base/blob/master/study-reactive/src/main/java/me/reactive/study/base/SampleSubscriber.java
+)
