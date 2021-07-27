@@ -31,3 +31,17 @@ Flux<Integer> numbersFromFiveToSeven = Flux.range(5, 3);
 
 ## subscribe example
 [다양한 사용 예](https://github.com/pch8388/study-java-base/blob/master/study-reactive/src/test/java/me/reactive/study/base/SubscribeTests.java)
+
+## subscribe 취소
+- 람다 기반 subscribe() 메소드는 Disposable 타입 리턴
+- Disposable 인터페이스는 dispose() 메소드 호출로 구독을 취소할 수 있음
+- Flux, Mono 관점에서 취소는 소스가 데이터 생산을 중단해야 한다는 신호
+  - 즉각적 중단을 보장하지 않음 => 취소 명령을 받기전 데이터 생산하고 완료 할 수도 있음
+
+### Disposables
+- Disposable 관련 유틸 클래스
+- Disposables.swap() : Disposable 래퍼를 생성해서 기존 Disposable 을 자동으로 취소하고 다른 걸로 변경
+  - 래퍼를 폐기하면 자체적으로 close => 현재 구현체와 이후에 대체하는 모든 구현쳬를 폐기
+- Disposables.composite() : 여러 Disposable 을 수집해서 나중에 한번에 폐기할 수 있다
+  - composite 의 dispose() 메소드를 호출하고 나면 다른 Disposable 을 추가할 때마다 즉시 폐기
+
