@@ -50,3 +50,40 @@ Flux<Integer> numbersFromFiveToSeven = Flux.range(5, 3);
 - `BaseSubscriber` 는 `Subscriber` 를 확장
 - 요청할 양을 커스텀 하는 등의 기능을 편리하게 구현할 수 있다. [예제](https://github.com/pch8388/study-java-base/blob/master/study-reactive/src/main/java/me/reactive/study/base/SampleSubscriber.java
 )
+
+## Backpressure
+- 리액터에서는 `backpressure` 를 업스트림 연산자로 `request` 를 보내는 식으로 구현하였다
+- 현재의 모든 요청을 합쳐서 `demand` 또는 `pending request` 라고 함
+- `Demand` 는 언바운드 요청을 나타내는 Long.MAX_VALUE 로 제한 => 가능한 빨리 생산
+  - 기본적으로 backpressure 비활성화
+- 첫 요청은 구독하는 타이밍에 구독자 쪽에서는 보내는 데, 모든 데이터를 직접적으로 즉시 구독하면 Long.MAX_VALUE 언바운드 요청을 트리거링한다.
+  - `subscribe()`및 람다 기반 오버로딩 메소드 대부분 (`Consumer<Subscription>` 을 받는 메서드 제외)
+  - `block()`, `blockFirst()`, `blockLast()`
+  - `toIterable()`, `toStream()`
+- 요청 커스텀
+  ```java
+  Flux.range(1, 10)
+			.doOnRequest(r -> System.out.println("request of " + r))
+			.subscribe(new BaseSubscriber<>() {
+				
+        @Override
+				protected void hookOnSubscribe(Subscription subscription) {
+          // request 1 을 backpressure 로 upstream 에 보냄
+					request(1);
+				}
+
+				@Override
+				protected void hookOnNext(Integer value) {
+          // next 가 호출 되며 cancle 이 실행되어 구독이 종료된다
+					System.out.println("Cancelling after having received " + value);
+          // BaseSubscriber 에서 구독을 취소할 수 있도록 함
+					cancel();
+				}
+			});
+  ```
+  출력 결과
+  ```
+  request of 1
+  Cancelling after having received 1
+  ```
+- 이와 같이 요청을 조작한다면 최소한 시퀀스를 진행할 수 있을 만큼 demand 를 생산하여야 하는데, 그렇지 않으면 Flux 가 오도 가도 못하는 상황이 벌어질 수 있다. `BaseSubscriber` 의 `hookOnSubscribe` 는 언바운드 요청을 기본으로하여, 이 훅을 `override` 하면 최소한 한번은 `request` 를 호출하여야 한다
