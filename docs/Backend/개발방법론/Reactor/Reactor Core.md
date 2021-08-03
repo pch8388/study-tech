@@ -87,3 +87,15 @@ Flux<Integer> numbersFromFiveToSeven = Flux.range(5, 3);
   Cancelling after having received 1
   ```
 - 이와 같이 요청을 조작한다면 최소한 시퀀스를 진행할 수 있을 만큼 demand 를 생산하여야 하는데, 그렇지 않으면 Flux 가 오도 가도 못하는 상황이 벌어질 수 있다. `BaseSubscriber` 의 `hookOnSubscribe` 는 언바운드 요청을 기본으로하여, 이 훅을 `override` 하면 최소한 한번은 `request` 를 호출하여야 한다
+
+# 이벤트를 프로그래밍 방식으로 정의
+Sink : 관련 이벤트(onNext, onError 및 onComplete)를 프로그래밍 방식으로 정의하여 Flux 또는 Mono를 만드는 메소드 API
+
+## Synchronous generate
+- 동기 및 일대일 방출을 위한 generate 메서드 사용
+- 싱크는 SynchronousSink, next() 메서드는 콜백을 호출할 때마다 최대 한 번만 호출됨
+- error(Throwable) 이나 complete() 를 호출할 수 있지만 필수는 아님
+  - 호출하지 않으면 무한한 스트림
+- 초기상태를 Suppriler<S> 로 제공, generator 함수는 각 단계마다 새로운 상태 반환
+
+[예제](https://github.com/pch8388/study-java-base/blob/6a477534ec5e30cf40818245c17f46ebc01afd03/study-reactive/src/test/java/me/reactive/study/base/SinkTest.java)
