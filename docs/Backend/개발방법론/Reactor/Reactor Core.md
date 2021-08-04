@@ -91,11 +91,27 @@ Flux<Integer> numbersFromFiveToSeven = Flux.range(5, 3);
 # 이벤트를 프로그래밍 방식으로 정의
 Sink : 관련 이벤트(onNext, onError 및 onComplete)를 프로그래밍 방식으로 정의하여 Flux 또는 Mono를 만드는 메소드 API
 
-## Synchronous generate
+## generate : Synchronous
 - 동기 및 일대일 방출을 위한 generate 메서드 사용
 - 싱크는 SynchronousSink, next() 메서드는 콜백을 호출할 때마다 최대 한 번만 호출됨
 - error(Throwable) 이나 complete() 를 호출할 수 있지만 필수는 아님
   - 호출하지 않으면 무한한 스트림
-- 초기상태를 Suppriler<S> 로 제공, generator 함수는 각 단계마다 새로운 상태 반환
+- 초기상태를 `Suppriler<S>` 로 제공, generator 함수는 각 단계마다 새로운 상태 반환
 
 [예제](https://github.com/pch8388/study-java-base/blob/6a477534ec5e30cf40818245c17f46ebc01afd03/study-reactive/src/test/java/me/reactive/study/base/SinkTest.java)
+
+## create : Asynchronous and Multi-threaded
+- create 를 사용하면 각 단계마다 값을 여러 개 생산하는 Flux 를 만들 수 있으며, 멀티스레드로도 가능
+- generate 와는 다르게 별도 상태 기반 메소드는 없음
+- 콜백에서 멀티 스레드 기반 이벤트 트리거 가능
+- next, error, complete 메소드를 가지는 FluxSink 를 인자로 하는 Consumer 를 파라미터로 가진다
+- 리스너 기반 비동기 api 등 기존 api 를 리액티브하게 연결할 수 있다
+- create 람다 내에서 블로킹하면 교착 상태 등의 사이드 이팩트가 발생할 수 있다. 
+
+## push : Asynchronous but single-threaded
+- generate 와 create 중간 쯤이라고 생각할 수 있다 => 단일 생산자 이벤트 처리에 적합
+- 비동기 지원
+- 데이터를 생산하는 하나의 스레드에서만 next, complete, error 를 한번에 하나씩 실행 가능
+- create 같은 리액터 연산자 대부분은 하이븨드 push/pull 모델
+  - 대부분 비동기로 처리하더라도 요청과 관련해서 일부 컴포넌트가 pull 사용
+  
