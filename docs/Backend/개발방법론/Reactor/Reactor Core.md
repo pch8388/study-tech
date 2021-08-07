@@ -98,7 +98,7 @@ Sink : 관련 이벤트(onNext, onError 및 onComplete)를 프로그래밍 방�
   - 호출하지 않으면 무한한 스트림
 - 초기상태를 `Suppriler<S>` 로 제공, generator 함수는 각 단계마다 새로운 상태 반환
 
-[예제](https://github.com/pch8388/study-java-base/blob/6a477534ec5e30cf40818245c17f46ebc01afd03/study-reactive/src/test/java/me/reactive/study/base/SinkTest.java)
+[예제](https://github.com/pch8388/study-java-base/blob/master/study-reactive/src/test/java/me/reactive/study/base/GenerateTest.java)
 
 ## create : Asynchronous and Multi-threaded
 - create 를 사용하면 각 단계마다 값을 여러 개 생산하는 Flux 를 만들 수 있으며, 멀티스레드로도 가능
@@ -108,10 +108,19 @@ Sink : 관련 이벤트(onNext, onError 및 onComplete)를 프로그래밍 방�
 - 리스너 기반 비동기 api 등 기존 api 를 리액티브하게 연결할 수 있다
 - create 람다 내에서 블로킹하면 교착 상태 등의 사이드 이팩트가 발생할 수 있다. 
 
+[예제](https://github.com/pch8388/study-java-base/blob/master/study-reactive/src/test/java/me/reactive/study/base/SequenceCreatorTest.java)
+
 ## push : Asynchronous but single-threaded
 - generate 와 create 중간 쯤이라고 생각할 수 있다 => 단일 생산자 이벤트 처리에 적합
 - 비동기 지원
 - 데이터를 생산하는 하나의 스레드에서만 next, complete, error 를 한번에 하나씩 실행 가능
 - create 같은 리액터 연산자 대부분은 하이븨드 push/pull 모델
   - 대부분 비동기로 처리하더라도 요청과 관련해서 일부 컴포넌트가 pull 사용
-  
+
+## handle
+- 인스턴스 메솓로 공통 연산자처럼 기존 소스에 연결 가능
+- Mono, Flux 모두에 존재
+- 각 소스에 있는 아이템 중 임의의 값만 생성하거나 일부 아이템을 스킵하는 식으로 활용
+  - map + filter 의 느낌
+
+[예제](https://github.com/pch8388/study-java-base/blob/master/study-reactive/src/test/java/me/reactive/study/base/SampleHandleTest.java)
