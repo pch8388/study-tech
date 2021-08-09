@@ -206,3 +206,97 @@ final Thread thread = new Thread(() -> flux.subscribe(System.out::println));
 thread.start();
 thread.join();
 ```
+
+# Handling Errors
+- 리액티브 스트림에서 에러는 종료 이벤트
+  - 발생 즉시 시퀀스 종료
+  - `Subscriber`의 `onError` 메소드에 에러 전파
+- `onError`가 정의되어 있지 않으면 에러 발생시 `UnsupportedOperationException` 발생
+  - 이런 예외는 `Exceptions.isErrorCallbackNotImplemented` 메소드로 알아내 분류할 수 있다
+- 리액터는 에러 처리 연산자를 제공하기 때문에, 체인 중간에 다른 방식으로도 에러 처리 가능
+  ```java
+  Flux.just(1, 2, 0)
+    .map(i -> "100 / " + i + " = " + (100 / i))
+    .onErrorReturn("Divided by zero:(");
+  ```
+> 리액티브 시쿼스에서 발생하는 모든 에러는 종료 이벤트이기 때문에 에러 처리 연산자를 사용해도 기존 시퀀스를 유지할 수 없다. `onError` 연산자는 새로운 시퀀스(fallback)를 시작한다. 즉, 종료된 시퀀스의 업스트림을 대체한다.
+
+## Error Handling Operators
+구독할 때 체인 끝에 사용하는 `onError` 콜백은 `catch` 블록과 유사함
+```java
+Flux<String> s = Flux.range(1, 10)
+  .map(this::doSomethingDangerous)
+  .map(this::doSecondTransform);
+
+s.subscribe(value -> System.out.println("RECEIVED " + value),
+  error -> System.err.println("CAUGHT " + error) // error handle
+);
+```
+
+### Static Fallback Value
+정적인 값을 정해두고 반환시킨다
+```java
+final Flux<String> flux = Flux.range(1, 10)
+  .map(this::doSomethingDangerous)
+  .onErrorReturn("RECOVERED");
+
+flux.subscribe(value -> System.out.println("RECEIVED " + value));
+
+// 예외 발생시 시퀀스가 종료되고
+// RECEIVED RECOVERED 가 반환된다
+```
+Predicate 을 사용하여 일치할때만 static value 를 반환하도록 할 수 있다
+```java
+final Flux<String> flux = Flux.range(1, 10)
+  .map(this::doSomethingDangerous)
+  .onErrorReturn(e -> e.getMessage().equals("doSomethingException"), "RECOVERED");
+
+flux.subscribe(value -> System.out.println("RECEIVED " + value));
+```
+- 일치하지 않은 예외가 발생하면 `ErrorCallbackNotImplemented` 예외가 발생함 => `UnsupportedOperationException` 타입의 리액터에서 재구현한 예외 클래스임
+
+### Fallback Method
+캐치한 다음 fallback 메소드를 실행하는 형태
+```java
+Flux.just("key1", "key2")
+  .flatMap(k -> callExternalService(k) 
+      .onErrorResume(e -> getFromCache(k)) 
+      // 데이터를 외부에서 가져오다가 에러 발생시 cache로부터 데이터를 가져오도록 구현함
+  );
+```
+조건에 따라 다르게 처리할 수 있다
+```java
+Flux.just("timeout1", "unknown", "key2")
+  .flatMap(k -> callExternalService(k)
+      .onErrorResume(error -> { 
+          if (error instanceof TimeoutException) 
+              return getFromCache(k);
+          else if (error instanceof UnknownKeyException)  
+              return registerNewEntry(k, "DEFAULT");
+          else
+              return Flux.error(error);
+      })
+  );
+```
+
+### Dynamic Fallback Value
+캐치한 다음 동적으로 fallback 값 계산
+```java
+erroringFlux.onErrorResume(error -> Mono.just(
+  MyWrapper.fromError(error)
+));
+```
+
+### catch and rethrow
+```java
+Flux.just("timeout1")
+  .flatMap(k -> callExternalService(k))
+  .onErrorResume(original -> Flux.error(
+          new BusinessException("oops, SLA exceeded", original))
+  );
+
+// onErrorMap 사용하여 좀 더 직관적으로 표현
+Flux.just("timeout1")
+  .flatMap(k -> callExternalService(k))
+  .onErrorMap(original -> new BusinessException("oops, SLA exceeded", original));
+```
