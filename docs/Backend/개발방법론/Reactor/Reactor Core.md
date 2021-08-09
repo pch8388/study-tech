@@ -166,4 +166,24 @@ void thread() throws InterruptedException {
 - 리액터는 리액티브 체인에서 실행 컨텍스트(또는 스케줄러)를 전환할 수 있는 `publishOn`과 `subscribeOn`을 제공
   - 두 메서드는 `Scheduler`를 받아 해당 스케줄러로 전환 가능
   - `publishOn`은 체인에서의 위치가 중요하지만 `subscribeOn`은 상관없음
-  
+
+## publishOn
+`publishOn` 은 구독자 체인 중간에 적용할 수 있다. 해당 `Scheduler`의 워커에서 콜백을 실행하는 동안 업스트림에서 신호를 받아 다운스트림으로 재생산한다. `publishOn` 뒤에 이어지는 연산자의 실행 위치가 달라질 수 있다
+- 실행위치에 대한 경우의 수
+  - 실행 컨텍스트를 `Scheduler`가 고른 `Thread`로 변경
+  - 리액티브 스트림 정의에 따라 `onNext`는 순차적으로 호출하기 때문에 단일   스레드 사용
+  - 특정 `Scheduler`로 실행하지 않았다면 `publishOn` 이후의 연산자는   동일한 스레드에서 이어서 실행
+```java
+Scheduler scheduler = Schedulers.newParallel("parallel-scheduler", 4);
+
+// publishOn 에서 지정한 스케줄러의 thread 를 사용한다
+final Flux<String> flux = Flux.range(1, 2)
+  .map(i -> Thread.currentThread().getName() + " " + (10 + i))
+  .publishOn(scheduler)
+  .map(i -> "value " + i + " " + Thread.currentThread().getName());
+
+final Thread thread = new Thread(() -> flux.subscribe(System.out::println));
+
+// value Thread-0 11 parallel-scheduler-1
+// value Thread-0 12 parallel-scheduler-1
+```
