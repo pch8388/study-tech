@@ -300,3 +300,67 @@ Flux.just("timeout1")
   .flatMap(k -> callExternalService(k))
   .onErrorMap(original -> new BusinessException("oops, SLA exceeded", original));
 ```
+
+### Log or React on the Side
+로깅 등의 에러를 전파하며 시퀀스를 수정하지 않는 다른 일을 할때는 `doOnError`연산자를 사용
+> `doOn`으로 시작하는 연산자는 side-effect를 끼워 넣을 수 있다. 이를 활용하면 시퀀스는 수정하지 않고 시퀀스 이벤트 안에서 원하는 side-effect를 일으킬 수 있다
+```java
+LongAdder failureStat = new LongAdder();
+Flux<String> flux = Flux.just("unknown")
+  .flatMap(k -> callExternalService(k)
+      .doOnError(e -> {
+          // side-effect 를 일으키는 메소드 실행
+          // log 통계를 1 증가시킴
+          failureStat.increment();
+          log("uh oh, falling back, service failed for key " + k);
+      })
+  );
+```
+
+### Using Resources and the Finally Block
+`doFinally`는 시퀀스를 종료(`onComplete` 또는 `onError`)하거나 취소될 때마다 원하는 부수 효과를 실행시킬 수 있다
+- `doFinally` 에서는 종료타입을 나타내는 `SignalType`을 consume 한다
+```java
+Stats stats = new Stats();
+LongAdder statsCancel = new LongAdder();
+
+Flux<String> flux = Flux.just("foo", "bar")
+    .doOnSubscribe(s -> stats.startTimer())
+    .doFinally(type -> { 
+        stats.stopTimerAndRecordTiming(); 
+        // 취소시마다 증가
+        if (type == SignalType.CANCEL)
+          statsCancel.increment();
+    })
+    .take(1); // 아이템을 하나 방출 후 종료
+```
+
+`using`은 `Flux`처리가 완료되면 `Flux`를 생산한 리소스로 어떤 처리를 해야 할 때 사용
+```java
+AtomicBoolean isDisposed = new AtomicBoolean();
+Disposable disposableInstance = new Disposable() {
+  @Override
+  public void dispose() {
+    isDisposed.set(true);
+  }
+
+  @Override
+  public String toString() {
+    return "DISPOSABLE";
+  }
+};
+
+Flux<String> flux =
+  Flux.using(
+    // 리소스 생성
+    () -> disposableInstance,
+    // 리소스 처리하고 Flux<T> 리턴
+    disposable -> Flux.just(disposable.toString()),
+    // 리소스 정리 => Flux 종료 혹은 취소시 호출
+    Disposable::dispose
+  );
+
+flux.subscribe(System.out::println);
+
+// DISPOSABLE
+```
