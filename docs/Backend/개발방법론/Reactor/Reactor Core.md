@@ -187,3 +187,22 @@ final Thread thread = new Thread(() -> flux.subscribe(System.out::println));
 // value Thread-0 11 parallel-scheduler-1
 // value Thread-0 12 parallel-scheduler-1
 ```
+
+## subscribeOn
+`subscribeOn`이 구독 프로세스에 적용되는 시점은 역방향 체인이 구성될 때이다. `subscribeOn` 위치에 상관없이 항상 데이터 소스를 방출하는 컨텍스트에 영향을 미친다. 하지만 `publishOn`을 호출하면 이후 동작에는 영향을 주지 않는다.
+- `subscribeOn`은 전체 체인이 구독하는 Thread 를 변경한다
+> 실제로는 체인의 가장 앞에 있는 `subscribeOn` 호출만 고려
+```java
+Scheduler scheduler = Schedulers.newParallel("parallel-scheduler", 4);
+
+// subscribeOn 에서 지정한 스케줄러의 thread 를 전체 체인에서 사용한다
+final Flux<String> flux = Flux.range(1, 2)
+  .log()
+  .map(i -> 10 + i)
+  .subscribeOn(scheduler)
+  .map(i -> "value " + i);
+
+final Thread thread = new Thread(() -> flux.subscribe(System.out::println));
+thread.start();
+thread.join();
+```
