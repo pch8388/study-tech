@@ -364,3 +364,97 @@ flux.subscribe(System.out::println);
 
 // DISPOSABLE
 ```
+
+### Demonstrating the Termminal Aspect of onError
+`Flux.interval`을 사용하면 에러가 발생하면 업스트림 시퀀스를 종료한다. `interval`연산자는 매개변수 x만큼의 시간이 지날 때마다 `Long (input)` 값을 증가시킨다.
+
+```java
+final Flux<String> flux = Flux.interval(Duration.ofMillis(250))
+  .map(input -> {
+    if (input < 3)
+      return "tick " + input;
+    throw new RuntimeException("boom");
+  })
+  .onErrorReturn("Uh oh");
+
+flussx.subscribe(System.out::println);
+Thread.sleep(2100);
+```
+- 3 틱(3 * 250)의 시간이상이 되어도 시퀀스가 종료되었기 때문에 더이상 출력되지 않음
+
+### Retrying
+`retry` : 에러를 생산한 시퀀스를 재시도
+- 업스트림 `Flux`를 재구독한다. 이는 완전히 다른 시퀀스이며, 기존 시퀀스는 종료시킨다.
+```java
+Flux.interval(Duration.ofMillis(250))
+  .map(input -> {
+    if (input < 3)
+      return "tick " + input;
+    throw new RuntimeException("boom");
+  })
+  .retry(1)
+  .elapsed() // 이전 데이터 방출 소요시간 + 현 데이터 방출 소요시간을 묶어서 보여주기 위함
+  .subscribe(System.out::println, System.err::println);
+
+Thread.sleep(2100);
+
+// 결과
+// [258,tick 0]
+// [247,tick 1]
+// [250,tick 2]
+// [512,tick 0]
+// [248,tick 1]
+// [247,tick 2]
+```
+> [512,tick 0] => 예외 발생 후 재시도 했기때문에 시간이 2배로 걸림, 새로운 시퀀스이기 때문에 0부터 시작
+
+## Handling Exceptions in Operators or Functions
+일반적으로 `unchecked exception`은 항상 `onError`를 통해 전파
+```java
+Flux.just("foo")
+  // RuntimeException 을 던지면
+  .map(s -> { throw new IllegalArgumentException(s); })
+  .subscribe(v -> System.out.println("got value"),
+    // onError 이벤트로 인식하여 처리됨
+    e -> System.err.println("ERROR : " + e));
+```
+> hook을 사용해 Exception을 onError로 전달하기 전에 예외를 변경 시키거나, 로깅을 하는 등의 튜닝을 할 수 있다
+
+- 리액터에서는 항상 치명적인 에러로 간주해야 하는 예외를 따로 정의(`Exceptions.throwIfFatal`)
+  - `BubblingException` : `RuntimeException` 의 하위 타입 예외
+  - `ErrorCallbackNotImplemented` : `UnsupportedOperationException` 의 하위 타입 예외 => `onError`가 정의되지 않은 예외 발생시 발생
+  - 위의 두가지를 제외하고 JVM 예외로 분류한다
+    - VirtualMachineError
+    - ThreadDeath
+    - LinkageError
+- 동시성 경합으로 `onError`나 `onComplete` 조건을 두 번 이끄는 경우가 생기면 전파할 수 없는 에러는 버려진다 => 커스텀 훅으로 관리가능 (`Dropping Hooks`)
+- checked exception 처리 옵션
+  1. 예외를 캐치해서 복구 => 시퀀스 정상적으로 이어감
+  2. 예외를 캐치해서 unchecked exception으로 감싸서 다시 던짐 => 시퀀스 중단됨
+  3. Flux를 리턴해야 한다면, 에러를 생산하는 Flux로 예외를 감싼다(`return Flux.error(checkedException`) => 시퀀스 종료됨
+- `Exceptions` : checked exception 일때만 예외를 감쌀 수 있는 유틸리티클래스
+  - `Exceptions.propagate` 로 예외를 래핑하면 먼저 `throwIfFatal` 메소드를 호출해보고 `RuntimeException` 이라면 감싸지 않음
+  - 감싸기 전에 있던 기존 예외가 필요하면 `Exceptions.unwrap` 메소드 사용 => 리액터 관련 예외 계층 구조에서 루트 원인으로 거슬러 올라간다
+```java
+final Flux<String> flux = Flux.range(1, 10)
+  .map(i -> {
+    try {
+      return convert(i);
+    } catch (IOException e) {
+      // RuntimeException 으로 변경하여 전파
+      throw Exceptions.propagate(e);
+    }
+  });
+
+flux.subscribe(
+  v -> System.out.println("RECEIVED : " + v),
+  e -> {
+    // wrapping 된 얘외의 원래 클래스를 확인하여 처리
+    if (Exceptions.unwrap(e) instanceof IOException) {
+      System.out.println("Something bad happened with I/O");
+    } else {
+      System.out.println("Something bad happened");
+    }
+  }
+);
+```
