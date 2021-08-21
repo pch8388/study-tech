@@ -84,3 +84,25 @@ void thenAwait() {
 }
 ```
 > `verify()`는 `Duration`을 반환 => 전체 테스트를 하는 동안 걸린 실제 시간
+
+# Performing Post-execution Assertions with StepVerifier
+`verifyTenAssertThat()` : verify()`를 트리거하는 대신 다른 assertion API 로 전환하여 검증할 수 있다
+
+# Testing the Context
+`StepVerifier`에서 `Context`를 전파하는 두 가지 expectation
+- `expectAccessibleContext` : 전파한 `Context` 관련 expectation을 세팅할 수 있는 `ContextExpectations` 객체 반환. 시퀀스 expectation 셋으로 돌아가려면 `then()` 호출
+- `expectNoAccessibleContext` : 테스트하는 동안 연산자 체인에서 `Context`가 전파되지 않는다는 expectation 세팅. 테스트에서 사용하는 `Publisher`가 리액터의 publisher가 아니거나 `Context`를 전파할 연산자가 없는 경우 주로 사용
+> verifier를 만들때 `StepVerifierOptions`를 사용하면 `StepVerifier`에 테스트 환경에서 필요한 초기 `Context` wndlq
+```java
+@Test
+void context() {
+   StepVerifier.create(Mono.just(1).map(i -> i + 10),
+        StepVerifierOptions.create().withInitialContext(Context.of("thing1", "thing2")))
+    .expectAccessibleContext()
+    .contains("thing1", "thing2")  // Context 를 위한 expectation
+    .assertThat(context -> assertEquals(context.get("thing1"), "thing2")) // 이런 형태로 Context 내용 검증 가능
+    .then()
+    .expectNext(11)
+    .verifyComplete();
+}
+```
