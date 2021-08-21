@@ -49,4 +49,38 @@ public void testAppendBoomError() {
     - 마지막 종료 expectation과 `verify`에는 사용 불가
   - `StepVerifierOptions.create().scenarioName(String)` : `StepVerifierOptions`로 `StepVerifier`를 만들면 `scenarioName`메소드로 전체 시나리오 이름을 지정할 수 있고, 이 이름은 assertion 에러 메시지에 사용
 
+# Manipulating Time
+`StepVerifier`를 시간 기반 연산자와 사용하면 오랜 시간이 걸리는 코드를 실제로 기다리지 않고 테스트 할 수 있다
+```java 
+// 항상 람다안에서 Flux(Mono)를 초기화하는 Supplier<Publisher<T>> 를 파라미터로 줘야 한다
+StepVerifier.withVirtualTime(() -> Mono.delay(Duration.ofDays(1)))
+// ... 또다른 expectation 들
+```
+- `Schedulers` 팩토리에 있는 커스텀 `Scheduler`를 연결
+  - 시간 기반 연산자가 디폴트 `Schedulers.parallel()`스케줄러를 `VirtualTimeScheduler`로 변경
+- 테스트할 Flux 인스턴스를 스케줄러가 세팅된 이후에 생성되어야 하기 때문에 인자로 `Supplier<Publisher<T>>`를 넘겨야하고, 해당 `Supplier`에서 `Flux or Mono`를 생성해야 한다
+- 가상시간을 위한 expectation 메소드
+  - `thenAwait(Duration)` : 잠시 스텝 검증을 멈춘다(몇 가지 신호가 발생하거나 지연되도록)
+  - `expectNoEvent(Duration)` : 주어진 시간 동안 시퀀스를 재생하지만 그 시간 동안 신호가 하나라도 발생하면 테스트 실패
+  - 위의 두 메소드는 classic 모드에선 주어진 시간 동안 스레드 중지, virtual 모드에선 가상 시계를 사용
+> `expectNovent`는 `subscription`도 하나의 이벤트로 간주. 이 메소드를 첫 번째 스텝에 쓰면 구독 신호가 감지되어 보통 실패 => 대신 `expectSubscription().expectNoEvent(Duaration)` 사용
+```java
+@Test
+void virtualTime() {
+  StepVerifier.withVirtualTime(() -> Mono.delay(Duration.ofDays(1)))
+    .expectSubscription()
+    .expectNoEvent(Duration.ofDays(1))  // 하루동안 아무 일도 일어나지 않기를 기대함
+    .expectNext(0L)
+    .verifyComplete();
+}
 
+// 위의 코드와 같지만 thenAwait 은 아무 이벤트도 발생하지 않는 것을 보장하지 않는다
+@Test
+void thenAwait() {
+  StepVerifier.withVirtualTime(() -> Mono.delay(Duration.ofDays(1)))
+    .thenAwait(Duration.ofDays(1))
+    .expectNext(0L)
+    .verifyComplete();
+}
+```
+> `verify()`는 `Duration`을 반환 => 전체 테스트를 하는 동안 걸린 실제 시간
