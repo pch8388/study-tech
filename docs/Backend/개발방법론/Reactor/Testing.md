@@ -106,3 +106,62 @@ void context() {
     .verifyComplete();
 }
 ```
+
+# Manually Emitting with TestPublisher
+`TestPublisher`는 데이터 소스를 완전히 통제해서 직접 테스트하고 싶은 상황과 거의 근접한 신호를 트리거한다
+- 연산자를 직접 구현하거나 리액티브 스트림 스펙을 잘 따르는지, 데이터 소스가 잘 동작하지 않는 상황을 검증하기도 한다
+- 다양한 신호를 프로그래밍 방식으로 트리거 할 수 있는 `Publisher<T>`이다
+  - `next(T), next(T, T...)` :  1~n `onNext` 신호를 트리거
+  - `emit(T...)` : 1~n `onNext` 신호를 트리거 + `complete()`
+  - `complete()` : `onComplete` 신호와 함께 종료
+  - `error(Throwable)` : `onError` 신호와 함께 종료
+
+## TestPublisher 팩토리 메소드
+- `create` : 잘 동작하는 `TestPublisher`를 얻음
+- `createNonCompliant` : 제대로 동작하지 않는 `TestPublisher`를 얻음
+  - `TestPublisher.Violation` 열거형 값을 하나 이상 인자로 받음 => 이 값으로 publisher가 따르지 않을 스펙 정의
+    - `REQUEST_OVERFLOW` : 요청이 충분하지 않을 때도 `IllegalStateException`을 트리거하는 대신 `next`호출 허용
+    - `ALLOW_NULL` : null 값이 들어오면 `NullPointException`을 트리거하는 대신 `next`호출 허용
+    - `CLEANUP_ON_TERMINATE` : row 하나에서 종료 신호를 여러번 허용 (`complete(), error(), emit()`)
+    - `DEFER_CANCELLATION` : `TestPublisher`가 취소 신호를 무시하고, 이전 신호한테 밀린 것처럼 계속해서 신호를 방출하도록 허용
+- `flux(), mono()` 를 사용하여 `Flux, Mono` 로 전환 가능
+
+# Checking the Execution Path with PublisherProbe
+연산자 체인 중 실행경로가 여러 곳으로 나뉘는 별도 하위 시퀀스에 대해 테스트 하는 방법
+- source 가 빈 경우 `switchIfEmpty`를 사용하여 fallback 하는 메소드 테스트
+```java
+@Test
+void switchIfEmpty() {
+  StepVerifier.create(processOrFallback(Mono.empty(), Mono.just("EMPTY_PHRASE")))
+    .expectNext("EMPTY_PHRASE")
+    .verifyComplete();
+}
+
+static Flux<String> processOrFallback(Mono<String> source, Publisher<String> fallback) {
+  return source.flatMapMany(phrase -> Flux.fromArray(phrase.split("\\s+")))
+    .switchIfEmpty(fallback);
+}
+```
+- `Mono<Void>`가 생산되는 경우, 소스가 완료되길 기다렸다가 추가 작업을 수행 뒤 완료
+```java
+@Test
+void testCommandEmptyPathIsUsed() {
+  PublisherProbe<Void> probe = PublisherProbe.empty();
+
+  StepVerifier.create(processOrFallback(Mono.empty(), probe.mono()))
+    .verifyComplete();
+
+  probe.assertWasSubscribed();
+  probe.assertWasRequested();
+  probe.assertWasNotCancelled();
+}
+
+static Mono<Void> processOrFallback(Mono<String> commandSource, Mono<Void> doWhenEmpty) {
+  return commandSource.flatMap(command -> executeCommand(command).then())
+    .switchIfEmpty(doWhenEmpty);
+}
+
+private static Mono<String> executeCommand(String command) {
+  return Mono.just(command + " DONE");
+}
+```
