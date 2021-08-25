@@ -165,3 +165,10 @@ private static Mono<String> executeCommand(String command) {
   return Mono.just(command + " DONE");
 }
 ```
+
+
+## The checkpoint() Alternative
+`checkpoint(string)` : 파라미터 문자열로 어셈블리 traceback 을 식별하기 위해 사용
+
+[인텔리제이 리액터 디버그 모드 설정](https://www.jetbrains.com/help/idea/reactor.html#reactor-debug-settings)
+
