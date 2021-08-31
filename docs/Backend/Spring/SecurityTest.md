@@ -33,29 +33,60 @@ public class WithMockCustomUserSecurityContextFactory
 }
 ```
 
-# WebTestClient 에서의 시큐리티
+# WebTestClient 에서의 시큐리티 (reactive)
 - WebTestClient 에서는 시큐리티를 따로 추가 설정해주어야 작동한다
 > [참고](https://godekdls.github.io/Spring%20Security/reactivetestsupport/#301-testing-reactive-method-security)
+
+[예제] (https://github.com/pch8388/foo-board/blob/main/src/test/java/me/study/foostudy/board/api/PostApiTest.java)
+
 ```java
-@RunWith(SpringRunner.class)
-@ContextConfiguration(classes = HelloWebfluxMethodApplication.class)
+@SpringBootTest
+@AutoConfigureWebTestClient
 public class HelloWebfluxMethodApplicationTests {
-    @Autowired
-    ApplicationContext context;
+    private PostService postService;
+	WebTestClient client;
 
-    WebTestClient rest;
-
-    @Before
-    public void setup() {
-        this.rest = WebTestClient
-            .bindToApplicationContext(this.context)
-            // add Spring Security test Support
-            .apply(springSecurity())
-            .configureClient()
-            .filter(basicAuthentication())
-            .build();
-    }
+	@BeforeEach
+	void setUp() {
+		postService = Mockito.mock(PostService.class);
+		client = WebTestClient
+			.bindToController(new PostApi(postService))
+			.apply(springSecurity())
+			.configureClient()
+            // filter 에 인증정보를 주면 인증정보를 생성해준다 => 즉, 따로 인증할 필요 없음
+			.filter(basicAuthentication("test", "test"))
+			.build();
+	}
     // ...
+}
+```
+
+## 인수테스트
+- 인수테스트 작성시에는 로그인 정보도 같이 넘겨주어야 실제 실행하는 것과 같은 효과를 낼 수 있다.
+- 위에서 소개한 controller 를 바인드하거나 하는 방법은 실제 환경과 또 차이가 있을 수 있기 때문에 최대한 실제상황과 비슷하게 테스트해야 한다
+
+```java
+@DisplayName("게시글을 등록한다")
+@Test
+void createPost() {
+    게시글_등록_되어있음("새로운 게시글 제목", "새로운 게시글 내용을 등록합니다.");
+}
+
+private ResponsePostDto 게시글_등록(String title, String content) {
+    return client.post().uri("/posts")
+        // 헤더에 인증정보를 설정하여 넘겨준다
+        .headers(headers -> headers.setBasicAuth("test", "test"))
+        .contentType(APPLICATION_JSON)
+        .accept(APPLICATION_JSON)
+        .body(BodyInserters.fromPublisher(Mono.just(requestPost(title, content)),
+            RequestPostDto.class))
+        .exchange()
+        .expectStatus().isCreated()
+        .expectBody(ResponsePostDto.class)
+        .consumeWith(getDocument("post-new-item",
+            getNewPostRequestSnippet(), getPostResponseSnippet()))
+        .returnResult()
+        .getResponseBody();
 }
 ```
 
