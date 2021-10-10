@@ -156,6 +156,7 @@ void thread() throws InterruptedException {
   - 실행중이지 않은 컨텍스트 (`Schedulers.immediate()`) : 처리시간(processing time)에 제출된 Runnable 을 즉시 실행 => 효과적 실행을 위해 현재 Thread 사용(null object 패턴이나 스케쥴러가 아무것도 하지 않는 것처럼 보일 수 있다)
   - 하나의 재사용 Thread (`Schedulers.single()`) : 모든 caller 가 스케쥴러가 종료될때까지 같은 쓰레드를 재사용한다 => 호출마다 다른 쓰레드 사용을 원한다면 Schedulers.newSingle() 을 호출마다 실행해야 한다
   - unbounded elastic thread pool (`Schedulers.elastic()`) : 이 메소드는 backpressure 이슈를 감추고 너무 많은 스레드를 사용하는 경향이 있어서 잘 사용하지 않음
+    - deprecated 되었음. 아래의 `boundedElastic`을 사용하여야 함
   - bounded elastic thread pool(`Schedulers.boundedElastic()`)
     - 새 워커 풀을 만들고, 여유 있는 스레드가 있으면 재사용
     - 너무 오랫동안 놀고 있는 워커풀이 있으면 폐기 (디폴트 60초)
