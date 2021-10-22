@@ -7,6 +7,41 @@
   - 종료 이벤트를 포함한 모든 이벤트는 선택사항
   - 비어있는 유한한 시퀀스, 무한 시퀀스, 값이 있는 무한 시퀀스 등등..
 
+## defer
+`Flux`와 `Mono`의 `defer` 메서드는 해당 구문이 정말 필요할 때까지 지연시켜서 실행한다
+- 아래 구문에서 defer 를 쓰지 않은 아래의 구문은 Repository 의 지연을 모두 기다린 후 시퀀스가 시작된다.
+```java
+public class DeferEx {
+	public static void main(String[] args) {
+		Flux.range(0, 5)
+			.flatMap(x -> Mono.just(x * 2))
+			.switchIfEmpty(Flux.defer(DeferEx::getJust))
+			.subscribe(System.out::println);
+
+		Flux.range(0, 5)
+			.flatMap(x -> Mono.just(x * 2))
+			.switchIfEmpty(getJust())
+			.subscribe(x -> System.out.println("print just : " + x));
+	}
+
+	private static Mono<Integer> getJust() {
+		return getInt();
+	}
+
+	static class Repository {
+		static Mono<Integer> getInt() {
+			try {
+				System.out.println("getInt In !!");
+				Thread.sleep(1000);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+			return Mono.just(100);
+		}
+	}
+}
+```
+
 # Mono
 ![Mono](../../../images/mono.png)
 - Mono 는 0개 또는 1개의 아이템 생산에 특화된 Publisher<T> 로 onComplete 똔느 onError 신호로 종료되며 이러한 이벤트는 선택사항이다
