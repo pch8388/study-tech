@@ -102,19 +102,19 @@ Flux<Integer> numbersFromFiveToSeven = Flux.range(5, 3);
 			.subscribe(new BaseSubscriber<>() {
 				
         @Override
-				protected void hookOnSubscribe(Subscription subscription) {
+        protected void hookOnSubscribe(Subscription subscription) {
           // request 1 을 backpressure 로 upstream 에 보냄
-					request(1);
-				}
+          request(1);
+        }
 
-				@Override
-				protected void hookOnNext(Integer value) {
+        @Override
+        protected void hookOnNext(Integer value) {
           // next 가 호출 되며 cancle 이 실행되어 구독이 종료된다
-					System.out.println("Cancelling after having received " + value);
+          System.out.println("Cancelling after having received " + value);
           // BaseSubscriber 에서 구독을 취소할 수 있도록 함
-					cancel();
-				}
-			});
+          cancel();
+        }
+      });
   ```
   출력 결과
   ```
