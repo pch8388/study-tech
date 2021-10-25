@@ -12,33 +12,33 @@
 - 아래 구문에서 defer 를 쓰지 않은 아래의 구문은 Repository 의 지연을 모두 기다린 후 시퀀스가 시작된다.
 ```java
 public class DeferEx {
-	public static void main(String[] args) {
-		Flux.range(0, 5)
-			.flatMap(x -> Mono.just(x * 2))
-			.switchIfEmpty(Flux.defer(DeferEx::getJust))
-			.subscribe(System.out::println);
+  public static void main(String[] args) {
+    Flux.range(0, 5)
+	.flatMap(x -> Mono.just(x * 2))
+	.switchIfEmpty(Flux.defer(DeferEx::getJust))
+	.subscribe(System.out::println);
 
-		Flux.range(0, 5)
-			.flatMap(x -> Mono.just(x * 2))
-			.switchIfEmpty(getJust())
-			.subscribe(x -> System.out.println("print just : " + x));
-	}
+    Flux.range(0, 5)
+	.flatMap(x -> Mono.just(x * 2))
+	.switchIfEmpty(getJust())
+	.subscribe(x -> System.out.println("print just : " + x));
+  }
 
-	private static Mono<Integer> getJust() {
-		return getInt();
-	}
+  private static Mono<Integer> getJust() {
+    return getInt();
+  }
 
-	static class Repository {
-		static Mono<Integer> getInt() {
-			try {
-				System.out.println("getInt In !!");
-				Thread.sleep(1000);
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}
-			return Mono.just(100);
-		}
-	}
+  static class Repository {
+    static Mono<Integer> getInt() {
+      try {
+	System.out.println("getInt In !!");
+	Thread.sleep(1000);
+      } catch (InterruptedException e) {
+	e.printStackTrace();
+      }
+      return Mono.just(100);
+    }
+  }
 }
 ```
 
@@ -98,23 +98,23 @@ Flux<Integer> numbersFromFiveToSeven = Flux.range(5, 3);
 - 요청 커스텀
   ```java
   Flux.range(1, 10)
-			.doOnRequest(r -> System.out.println("request of " + r))
-			.subscribe(new BaseSubscriber<>() {
-				
-        @Override
-        protected void hookOnSubscribe(Subscription subscription) {
-          // request 1 을 backpressure 로 upstream 에 보냄
-          request(1);
-        }
+    .doOnRequest(r -> System.out.println("request of " + r))
+    .subscribe(new BaseSubscriber<>() {
 
-        @Override
-        protected void hookOnNext(Integer value) {
-          // next 가 호출 되며 cancle 이 실행되어 구독이 종료된다
-          System.out.println("Cancelling after having received " + value);
-          // BaseSubscriber 에서 구독을 취소할 수 있도록 함
-          cancel();
-        }
-      });
+      @Override
+      protected void hookOnSubscribe(Subscription subscription) {
+        // request 1 을 backpressure 로 upstream 에 보냄
+        request(1);
+      }
+
+      @Override
+      protected void hookOnNext(Integer value) {
+        // next 가 호출 되며 cancle 이 실행되어 구독이 종료된다
+        System.out.println("Cancelling after having received " + value);
+        // BaseSubscriber 에서 구독을 취소할 수 있도록 함
+        cancel();
+      }
+  });
   ```
   출력 결과
   ```
