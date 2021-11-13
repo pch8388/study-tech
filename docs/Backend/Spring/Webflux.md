@@ -34,3 +34,18 @@ public class MonoController {
 - fromSupplier 를 사용하면 subscribe 가 되어야 Mono 도 생성한다
 - defer 로 생성하면 지연되긴 하는데, fromSupplier 와 동작방식이 다른 듯 함 => onSubscribe 되기 전에 실행
 - Spring 이 subscribe 를 자동으로 해주긴 하지만 따로 subscribe 를 명시적으로 해주면 해당 구문에서 바로 subscribe 되어 실행된 후, Spring 이 subscribe 하여 한번 더 실행된다
+
+# Flux
+```java
+@GetMapping(value = "/events", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+Flux<Event> events() {
+  Flux<String> es = Flux.generate(sink -> sink.next("value"));
+  Flux<Long> interval = Flux.interval(Duration.ofSeconds(1));
+
+  return Flux.zip(es, interval).map(tu -> new Event(tu.getT2(), tu.getT1())).take(10);
+}
+```
+
+- text/event-stream 을 이용하려면 Flux 로 return 해야 함
+- text/event-stream : 데이터를 stream 형태로 나눠서 보냄
+- `zip` : 오퍼레이터들을 묶어줌
