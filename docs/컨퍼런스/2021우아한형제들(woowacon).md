@@ -40,6 +40,8 @@
 
 > Hibernate - EventListener, Spring AOP 가 사용하기 가장 좋다
 
+- Kafka connect를 통해 CDC를 적용하는 것이 가장 활용도가 높을 것 같고, 앞으로 도입할 예정
+
 ### 이벤트 발행하기
 Amazon SNS, Amazon SQS 사용
 
