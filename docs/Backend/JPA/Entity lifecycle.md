@@ -5,4 +5,4 @@
   3. 준영속 ( detached ) : 영속성 컨텍스트에 저장 되었다가 분리된 상태
   4. 삭제 ( removed ) : 삭제된 상태
 
-![entity lifecycle](../../images/entity-lifecycle.png)
+<img width="670" alt="entity-lifecycle" src="https://user-images.githubusercontent.com/17218212/157004342-70795d5a-784a-4460-a6ba-4c3b34e647ab.png">

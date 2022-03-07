@@ -23,7 +23,7 @@
     }
     ```
 
-![기본정보생성](../../images/security1.png)
+<img width="913" alt="security1" src="https://user-images.githubusercontent.com/17218212/157004919-cba52ac5-1572-4f57-8bce-4995e3b88db6.png">
 
 UserDetailsServiceAutoConfigration 에서 기본 유저 정보를 생성한다
 - UserDetailsServiceAutoConfiguration 안에서 인메모리 방식으로 유저를 생성해주는 것을 알 수 있다
@@ -45,7 +45,7 @@ UserDetailsServiceAutoConfigration 에서 기본 유저 정보를 생성한다
 	}
 ```
 
-![기본정보생성코드](../../images/security2.png)
+<img width="534" alt="security2" src="https://user-images.githubusercontent.com/17218212/157004996-96e122bb-40ec-4316-aa86-19c752f29a72.png">
 
 - 따라서 설정 파일을 세팅하면 특정유저를 만들 수 있다 ⇒ 그냥 참고용으로만 ..
 
