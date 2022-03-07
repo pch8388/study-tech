@@ -7,7 +7,7 @@
 2. Preference 에서 Docker 설정
     1. Build, Execution, Deployment 선택
     2. Docker 선택
-    3. + 눌러서 Docker 선택하면 자동 설정으로 둬도 무방함
+    3. `+` 눌러서 Docker 선택하면 자동 설정으로 둬도 무방함
 3. 커맨드+8 을 누르면 Service 탭이 켜짐
 4. Service 탭에서 Docker 선택
 5. Container 선택 -> 원하는 컨테이너 골라서 Run 클릭
