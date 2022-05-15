@@ -30,19 +30,19 @@ UserDetailsServiceAutoConfigration 에서 기본 유저 정보를 생성한다
 
 ```java
 @Bean
-	@ConditionalOnMissingBean(
-			type = "org.springframework.security.oauth2.client.registration.ClientRegistrationRepository")
-	@Lazy
-	public InMemoryUserDetailsManager inMemoryUserDetailsManager(SecurityProperties properties,
-			ObjectProvider<PasswordEncoder> passwordEncoder) {
-    
-    // 시큐리티 프로퍼티의 유저 타입인 유저를 가져와 세팅하는 것을 확인
-		SecurityProperties.User user = properties.getUser(); 
-		List<String> roles = user.getRoles();
-		return new InMemoryUserDetailsManager(
-				User.withUsername(user.getName()).password(getOrDeducePassword(user, passwordEncoder.getIfAvailable()))
-						.roles(StringUtils.toStringArray(roles)).build());
-	}
+@ConditionalOnMissingBean(
+	type = "org.springframework.security.oauth2.client.registration.ClientRegistrationRepository")
+@Lazy
+public InMemoryUserDetailsManager inMemoryUserDetailsManager(SecurityProperties properties,
+		ObjectProvider<PasswordEncoder> passwordEncoder) {
+
+  // 시큐리티 프로퍼티의 유저 타입인 유저를 가져와 세팅하는 것을 확인
+  SecurityProperties.User user = properties.getUser(); 
+  List<String> roles = user.getRoles();
+  return new InMemoryUserDetailsManager(
+		User.withUsername(user.getName()).password(getOrDeducePassword(user, passwordEncoder.getIfAvailable()))
+		     .roles(StringUtils.toStringArray(roles)).build());
+}
 ```
 
 <img width="534" alt="security2" src="https://user-images.githubusercontent.com/17218212/157004996-96e122bb-40ec-4316-aa86-19c752f29a72.png">
@@ -174,11 +174,11 @@ DelegatingFilterProxy -> FilterChainProxy 위임
 
     ```java
     @Override
-        public void configure(WebSecurity web) throws Exception {
-            // static 요청에 대해 검사하지 않음
-            web.ignoring().requestMatchers(
-    						PathRequest.toStaticResources().atCommonLocations()); 
-        }
+    public void configure(WebSecurity web) throws Exception {
+      // static 요청에 대해 검사하지 않음
+      web.ignoring().requestMatchers(
+					PathRequest.toStaticResources().atCommonLocations()); 
+    }
     ```
 
     - h2 콘솔을 제외시키거나 ant matcher 를 쓸 수도 있고, 다양한 방법이 있음
@@ -264,13 +264,13 @@ DelegatingFilterProxy -> FilterChainProxy 위임
 
 ```java
 http.logout()
-		.logoutUrl("/logout")
-		.logoutSuccessUrl("/")
-		.logoutRequestMatcher(new AntPathRequestMatcher("/logout"))
-		.invalidateHttpSession(true)
-		.deleteCookies("cookie-name")
-		.addLogoutHandler(handler)
-		.logoutSuccessHandler(handler);
+    .logoutUrl("/logout")
+    .logoutSuccessUrl("/")
+    .logoutRequestMatcher(new AntPathRequestMatcher("/logout"))
+    .invalidateHttpSession(true)
+    .deleteCookies("cookie-name")
+    .addLogoutHandler(handler)
+    .logoutSuccessHandler(handler);
 ```
 
 ### UsernamePasswordAuthenticationFilter
@@ -313,8 +313,8 @@ http.logout()
 
     ```java
     http.anonymous()
-    		.principal()   // pricipal object
-    		.authorities() // 인증정보
+	.principal()   // pricipal object
+	.authorities() // 인증정보
     ```
 
   - 설정하지 않으면 디폴트 익명 정보로 넣어줌
@@ -330,7 +330,7 @@ http.logout()
       ```java
       http.sessionManagement()
           .maximumSessions(1)  // 같은 계정으로 동시 로그인 최대 개수
-              .maxSessionsPreventsLogin(false); // 동시 접속이 생기면 기존의 세션을 false : 만료시킴, true : 새로운 접속 불가
+          .maxSessionsPreventsLogin(false); // 동시 접속이 생기면 기존의 세션을 false : 만료시킴, true : 새로운 접속 불가
       ```
 
     - 동시 접속이 생기면 기존의 세션을 false : 만료시킴, true : 새로운 접속 불가
@@ -347,12 +347,12 @@ http.logout()
 
 ```java
 http.exceptionHandling()
-	  .accessDeniedHandler((request, response, accessDeniedException) -> {
+    .accessDeniedHandler((request, response, accessDeniedException) -> {
 	      UserDetails principal = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 	      String username = principal.getUsername();
 	      System.out.println(username + " is denied to access " + request.getRequestURI());
 	      response.sendRedirect("/access-denied");
-	  }); // 핸들러를 구현하여 인가 실패에 대한 처리
+     }); // 핸들러를 구현하여 인가 실패에 대한 처리
 ```
 
 ### FilterSecurityInterceptor
